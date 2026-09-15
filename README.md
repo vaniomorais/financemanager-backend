@@ -115,6 +115,7 @@ curl -X POST http://localhost:5000/transactions \
 ```
 backend/
 ├── app.py                 # Aplicação principal e rotas
+├── openapi_spec.py        # Especificação/Documentação da API OpenAPI
 ├── requirements.txt       # Dependências do projeto
 ├── models/
 │   └── models.py         # Definição de modelos (User, Transaction)
