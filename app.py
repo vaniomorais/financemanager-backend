@@ -16,7 +16,6 @@ app = OpenAPI(
 )
 
 # CONFIGURAÇÃO INICIAL DO APP E BANCO
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -33,18 +32,14 @@ def openapi_json():
 app.view_functions['openapi.doc_url'] = lambda: jsonify(openapi_spec)
 
 # CONSTANTES
-
 TRANSACTION_TYPES = {
     'INCOME': 'income',
     'EXPENSE': 'expense'
 }
 
 # FUNÇÕES AUXILIARES
-
-
 def calculate_summary(transactions):
     # Calcula resumo financeiro (renda, despesas, saldo) a partir de uma lista de transações.
-
     income = sum(t.amount for t in transactions if t.type ==
                  TRANSACTION_TYPES['INCOME'])
     expenses = sum(t.amount for t in transactions if t.type ==
@@ -60,7 +55,6 @@ def calculate_summary(transactions):
 
 def validation_error(e):
     # Converte erro de validação do Pydantic em resposta JSON.
-
     error_details = [{'field': err['loc'][0], 'message': err['msg']}
                      for err in e.errors()]
     return jsonify({
@@ -70,7 +64,6 @@ def validation_error(e):
 
 
 # ROTAS DA API - USUÁRIOS
-
 @app.route('/users', methods=['GET'])
 def get_users():
     # Consulta todos os usuários cadastrados.
@@ -94,7 +87,7 @@ def get_users():
 
 @app.route('/users', methods=['POST'])
 def create_user():
-    # Cria um novo usuário a partir dos dados recebidos no corpo da requisição.
+    # Cadastra um novo usuário.
     try:
         data = request.get_json()
         user_data = UserCreate(**data)
@@ -130,8 +123,6 @@ def delete_user(user_id):
         return jsonify({'error': f'Erro ao deletar usuário: {str(e)}'}), 500
 
 # ROTAS DA API - TRANSAÇÕES
-
-
 @app.route('/transactions', methods=['GET'])
 def get_all_transactions():
     # Consulta todas as transações e retorna um resumo financeiro do grupo familiar.
@@ -223,8 +214,6 @@ def delete_transaction(tx_id):
         return jsonify({'error': f'Erro ao deletar transação: {str(e)}'}), 500
 
 # INICIALIZAÇÃO DO APLICATIVO
-
-
 if __name__ == '__main__':
     # Cria tabelas do banco de dados se não existirem
     with app.app_context():

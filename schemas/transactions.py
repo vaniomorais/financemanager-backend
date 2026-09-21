@@ -83,7 +83,7 @@ class TransactionSummary(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "income": 5000.00,
+                "income": 4590.00,
                 "expenses": 2500.00,
                 "balance": 2500.00
             }

@@ -12,6 +12,7 @@ class User(db.Model):
     initials = db.Column(db.String(3), nullable=False)
     avatar_color = db.Column(db.String(20), nullable=True)
     
+    # Relacionamento com transações
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):

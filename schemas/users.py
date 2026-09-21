@@ -28,7 +28,7 @@ class UserCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "João Silva",
+                "name": "João Tilva",
                 "initials": "JS",
                 "avatar_color": "#81E6D9"
             }

@@ -16,7 +16,8 @@ def error(description):
 def operation(tag, summary, responses, body=None):
     spec = {'tags': [tag], 'summary': summary, 'responses': responses}
     if body:
-        spec['requestBody'] = {'required': True, 'content': {'application/json': {'schema': ref(body)}}}
+        spec['requestBody'] = {'required': True, 'content': {
+            'application/json': {'schema': ref(body)}}}
     return spec
 
 
@@ -27,7 +28,8 @@ def path_parameter(name):
 validation_error = error('Dados inválidos')
 not_found = error('Recurso não encontrado')
 server_error = error('Erro interno')
-deleted = json_response('Recurso removido', {'type': 'object', 'properties': {'message': {'type': 'string'}}})
+deleted = json_response('Recurso removido', {'type': 'object', 'properties': {
+                        'message': {'type': 'string'}}})
 
 openapi_spec = {
     'openapi': '3.0.3',
@@ -59,13 +61,13 @@ openapi_spec = {
         },
         '/users/{user_id}': {
             **path_parameter('user_id'),
-            'delete': operation('Usuários', 'Remove o usuário e transações vinculadas', {
+            'delete': operation('Usuários', 'Deleta o usuário e suas transações vinculadas', {
                 '200': deleted, '404': not_found, '500': server_error
             })
         },
         '/transactions/{tx_id}': {
             **path_parameter('tx_id'),
-            'delete': operation('Transações', 'Remove uma transação', {
+            'delete': operation('Transações', 'Deleta uma transação', {
                 '200': deleted, '404': not_found, '500': server_error
             })
         }
