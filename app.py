@@ -7,12 +7,12 @@ from pydantic import ValidationError
 from schemas import UserCreate, TransactionCreate
 from openapi_spec import openapi_spec
 
-info = Info(title="Finance Manager API", version="1.0.9", description="Gerenciador de finanças pessoais e familiares")
+info = Info(title="Finance Manager API", version="1.0.9",
+            description="Gerenciador de finanças pessoais e familiares")
 app = OpenAPI(
     __name__,
     info=info,
     doc_prefix='/docs',
-    doc_url='/openapi.json'
 )
 
 # CONFIGURAÇÃO INICIAL DO APP E BANCO
@@ -28,6 +28,7 @@ db.init_app(app)
 def openapi_json():
     return jsonify(openapi_spec)
 
+
 # Use the complete project specification in the built-in Swagger UI.
 app.view_functions['openapi.doc_url'] = lambda: jsonify(openapi_spec)
 
@@ -40,13 +41,16 @@ TRANSACTION_TYPES = {
 
 # FUNÇÕES AUXILIARES
 
+
 def calculate_summary(transactions):
     # Calcula resumo financeiro (renda, despesas, saldo) a partir de uma lista de transações.
 
-    income = sum(t.amount for t in transactions if t.type == TRANSACTION_TYPES['INCOME'])
-    expenses = sum(t.amount for t in transactions if t.type == TRANSACTION_TYPES['EXPENSE'])
+    income = sum(t.amount for t in transactions if t.type ==
+                 TRANSACTION_TYPES['INCOME'])
+    expenses = sum(t.amount for t in transactions if t.type ==
+                   TRANSACTION_TYPES['EXPENSE'])
     balance = income - expenses
-    
+
     return {
         'income': income,
         'expenses': expenses,
@@ -57,7 +61,8 @@ def calculate_summary(transactions):
 def validation_error(e):
     # Converte erro de validação do Pydantic em resposta JSON.
 
-    error_details = [{'field': err['loc'][0], 'message': err['msg']} for err in e.errors()]
+    error_details = [{'field': err['loc'][0], 'message': err['msg']}
+                     for err in e.errors()]
     return jsonify({
         'error': 'Erro na validação dos dados',
         'details': error_details
@@ -72,7 +77,7 @@ def get_users():
     try:
         users = User.query.all()
         users_data = []
-        
+
         for user in users:
             user_dict = user.to_dict()
             # Calcula o saldo do usuário usando função auxiliar
@@ -80,9 +85,9 @@ def get_users():
             user_dict['balance'] = summary['balance']
             user_dict['transaction_count'] = len(user.transactions)
             users_data.append(user_dict)
-        
+
         return jsonify(users_data), 200
-    
+
     except Exception as e:
         return jsonify({'error': f'Erro ao buscar usuários: {str(e)}'}), 500
 
@@ -93,22 +98,23 @@ def create_user():
     try:
         data = request.get_json()
         user_data = UserCreate(**data)
-        
+
         new_user = User(
             name=user_data.name,
             initials=user_data.initials,
             avatar_color=user_data.avatar_color
         )
-        
+
         db.session.add(new_user)
         db.session.commit()
-        
+
         return jsonify(new_user.to_dict()), 201
-    
+
     except ValidationError as e:
         return validation_error(e)
     except Exception as e:
         return jsonify({'error': f'Erro ao criar usuário: {str(e)}'}), 500
+
 
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
@@ -125,27 +131,28 @@ def delete_user(user_id):
 
 # ROTAS DA API - TRANSAÇÕES
 
+
 @app.route('/transactions', methods=['GET'])
 def get_all_transactions():
     # Consulta todas as transações e retorna um resumo financeiro do grupo familiar.
     try:
         all_transactions = Transaction.query.all()
-        
+
         # Calcula resumo usando função auxiliar
         summary = calculate_summary(all_transactions)
-        
+
         # Monta lista de transações com dados do membro
         transactions_with_member = []
         for t in all_transactions:
             tx_dict = t.to_dict()
             tx_dict['member_name'] = t.user.name
             transactions_with_member.append(tx_dict)
-        
+
         return jsonify({
             'summary': summary,
             'transactions': transactions_with_member,
             'transaction_count': len(all_transactions)}), 200
-    
+
     except Exception as e:
         return jsonify({'error': f'Erro ao buscar transações: {str(e)}'}), 500
 
@@ -155,15 +162,15 @@ def get_user_transactions(user_id):
     # Consulta todas as transações de um usuário específico e seu resumo financeiro.
     try:
         user = User.query.get_or_404(user_id)
-                # Calcula resumo usando função auxiliar
+        # Calcula resumo usando função auxiliar
         summary = calculate_summary(user.transactions)
-        
+
         return jsonify({
             'user': user.name,
             'summary': summary,
             'transactions': [t.to_dict() for t in user.transactions]
         }), 200
-    
+
     except NotFound:
         return jsonify({'error': 'Usuário não encontrado'}), 404
     except Exception as e:
@@ -176,10 +183,10 @@ def create_transaction(user_id):
     try:
         user = User.query.get_or_404(user_id)
         data = request.get_json()
-        
+
         # Validação com Pydantic
         transaction_data = TransactionCreate(**data)
-        
+
         new_transaction = Transaction(
             title=transaction_data.title,
             amount=transaction_data.amount,
@@ -188,18 +195,19 @@ def create_transaction(user_id):
             date=transaction_data.date,
             user_id=user.id
         )
-        
+
         db.session.add(new_transaction)
         db.session.commit()
-        
+
         return jsonify(new_transaction.to_dict()), 201
-    
+
     except ValidationError as e:
         return validation_error(e)
     except NotFound:
         return jsonify({'error': 'Usuário não encontrado'}), 404
     except Exception as e:
         return jsonify({'error': f'Erro ao criar transação: {str(e)}'}), 500
+
 
 @app.route('/transactions/<int:tx_id>', methods=['DELETE'])
 def delete_transaction(tx_id):
@@ -216,11 +224,11 @@ def delete_transaction(tx_id):
 
 # INICIALIZAÇÃO DO APLICATIVO
 
+
 if __name__ == '__main__':
     # Cria tabelas do banco de dados se não existirem
     with app.app_context():
         db.create_all()
-    
+
     # Inicia servidor em modo debug
     app.run(debug=True, host='127.0.0.1', port=5000)
-    
